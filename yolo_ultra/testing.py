@@ -298,27 +298,27 @@ def process_video_with_color_detection(video_path, output_folder, use_preprocess
     os.makedirs(session_folder, exist_ok=True)
     
     preprocessing_status = "ENABLED" if use_preprocessing else "DISABLED"
-    print(f"🎥 Processing: {os.path.basename(video_path)}")
-    print(f"🔧 Gentle preprocessing: {preprocessing_status}")
-    print(f"📁 Output folder: {session_folder}")
+    print(f"Processing: {os.path.basename(video_path)}")
+    print(f"Gentle preprocessing: {preprocessing_status}")
+    print(f"Output folder: {session_folder}")
     
     # Load models
     try:
         yolo_model = YOLO(YOLO_MODEL_PATH)
-        print("✓ YOLO model loaded")
+        print("YOLO model loaded")
         
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         color_model = SimpleCNN(len(COLOR_CLASSES))
         checkpoint = torch.load(COLOR_MODEL_PATH, map_location=device)
         color_model.load_state_dict(checkpoint['model_state_dict'])
         color_model.eval().to(device)
-        print(f"✓ Color model loaded on {device}")
+        print(f"Color model loaded on {device}")
         
         # Pre-define transform to avoid recreating
         transform = transforms.Compose([
             transforms.Resize((128, 128)),
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+            transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
         ])
         
     except Exception as e:
@@ -352,7 +352,7 @@ def process_video_with_color_detection(video_path, output_folder, use_preprocess
             comparison_writer = cv2.VideoWriter(comparison_path, fourcc, fps, (frame_width * 2, frame_height))
         
     except Exception as e:
-        print(f"✗ Video setup failed: {e}")
+        print(f"Video setup failed: {e}")
         return None, None
     
     # Initialize enhanced voting system with smoothing
@@ -362,7 +362,7 @@ def process_video_with_color_detection(video_path, output_folder, use_preprocess
     frame_count = 0
     start_time = time.time()
     
-    print("🚀 Processing video frames...")
+    print("Processing video frames...")
     
     try:
         while True:
@@ -373,7 +373,7 @@ def process_video_with_color_detection(video_path, output_folder, use_preprocess
             frame_count += 1
             
             # YOLO detection
-            yolo_results = yolo_model(frame, verbose=False)  # Turn off verbose
+            yolo_results = yolo_model(frame, verbose=False)  
             
             frame_detections = []
             
@@ -434,9 +434,9 @@ def process_video_with_color_detection(video_path, output_folder, use_preprocess
                 print(f"Progress: {progress:.1f}% | Frame {frame_count}/{total_frames} | {fps_current:.1f} fps")
     
     except KeyboardInterrupt:
-        print("\n⚠️ Processing interrupted by user")
+        print("Processing interrupted by user")
     except Exception as e:
-        print(f"✗ Processing error: {e}")
+        print(f"Processing error: {e}")
     finally:
         # Cleanup
         cap.release()
@@ -449,14 +449,14 @@ def process_video_with_color_detection(video_path, output_folder, use_preprocess
     total_time = time.time() - start_time
     avg_fps = frame_count / total_time if total_time > 0 else 0
     
-    print(f"\n🎯 === PROCESSING COMPLETE ===")
-    print(f"✅ Frames processed: {frame_count}")
-    print(f"⏱️ Total time: {total_time:.2f} seconds")
-    print(f"📊 Average FPS: {avg_fps:.2f}")
-    print(f"🎬 Output video: {output_video_path}")
+    print(f"=== PROCESSING COMPLETE ===")
+    print(f"Frames processed: {frame_count}")
+    print(f"Total time: {total_time:.2f} seconds")
+    print(f"Average FPS: {avg_fps:.2f}")
+    print(f"Output video: {output_video_path}")
     if save_comparison:
-        print(f"🔄 Comparison video: {comparison_path}")
-    print(f"📁 Session folder: {session_folder}")
+        print(f"Comparison video: {comparison_path}")
+    print(f"Session folder: {session_folder}")
     
     return session_folder, output_video_path
 
@@ -470,14 +470,14 @@ def process_multiple_videos(input_path, output_folder, use_preprocessing=True, s
     if os.path.isfile(input_path):
         # Single video file
         if any(input_path.lower().endswith(ext) for ext in video_extensions):
-            print(f"🎬 Processing single video: {os.path.basename(input_path)}")
+            print(f"Processing single video: {os.path.basename(input_path)}")
             session_folder, output_video = process_video_with_color_detection(
                 input_path, output_folder, use_preprocessing, save_comparison
             )
             if session_folder and output_video:
                 processed_videos.append((input_path, output_video))
         else:
-            print(f"❌ Not a valid video file: {input_path}")
+            print(f"Not a valid video file: {input_path}")
             return []
     
     elif os.path.isdir(input_path):
@@ -488,16 +488,16 @@ def process_multiple_videos(input_path, output_folder, use_preprocessing=True, s
                 video_files.append(os.path.join(input_path, filename))
         
         if not video_files:
-            print(f"❌ No video files found in folder: {input_path}")
+            print(f"No video files found in folder: {input_path}")
             return []
         
-        print(f"📁 Found {len(video_files)} video files in folder")
-        print(f"🔧 Preprocessing: {'ENABLED' if use_preprocessing else 'DISABLED'}")
-        print(f"📊 Comparison videos: {'ENABLED' if save_comparison else 'DISABLED'}")
+        print(f"Found {len(video_files)} video files in folder")
+        print(f"Preprocessing: {'ENABLED' if use_preprocessing else 'DISABLED'}")
+        print(f"Comparison videos: {'ENABLED' if save_comparison else 'DISABLED'}")
         
         for i, video_path in enumerate(video_files, 1):
             video_name = os.path.basename(video_path)
-            print(f"\n🎬 Processing video {i}/{len(video_files)}: {video_name}")
+            print(f"\nProcessing video {i}/{len(video_files)}: {video_name}")
             
             try:
                 session_folder, output_video = process_video_with_color_detection(
@@ -505,32 +505,31 @@ def process_multiple_videos(input_path, output_folder, use_preprocessing=True, s
                 )
                 if session_folder and output_video:
                     processed_videos.append((video_path, output_video))
-                    print(f"✅ Completed: {video_name}")
+                    print(f"Completed: {video_name}")
             except Exception as e:
-                print(f"❌ Failed processing {video_name}: {e}")
+                print(f"Failed processing {video_name}: {e}")
                 continue
     
     else:
-        print(f"❌ Path not found: {input_path}")
+        print(f"Path not found: {input_path}")
         return []
     
     return processed_videos
 
 # Example usage
 if __name__ == "__main__":
-    # Configuration - bisa file atau folder
-    INPUT_PATH = "input_videos"  # Bisa folder atau single file
+    INPUT_PATH = "input_videos"  
     OUTPUT_FOLDER = "video_results"
     
     # Preprocessing options
-    USE_PREPROCESSING = True    # Enable gentle preprocessing untuk akurasi lebih baik
-    SAVE_COMPARISON = False     # Save comparison video (original vs result)
+    USE_PREPROCESSING = True    
+    SAVE_COMPARISON = False     
     
-    print("🎯 === VIDEO COLOR DETECTION SYSTEM ===")
-    print(f"📂 Input: {INPUT_PATH}")
-    print(f"📁 Output: {OUTPUT_FOLDER}")
-    print(f"🔧 Gentle Preprocessing: {'ENABLED' if USE_PREPROCESSING else 'DISABLED'}")
-    print(f"📊 Comparison Videos: {'ENABLED' if SAVE_COMPARISON else 'DISABLED'}")
+    print("=== VIDEO COLOR DETECTION SYSTEM ===")
+    print(f"Input: {INPUT_PATH}")
+    print(f"Output: {OUTPUT_FOLDER}")
+    print(f"Gentle Preprocessing: {'ENABLED' if USE_PREPROCESSING else 'DISABLED'}")
+    print(f"Comparison Videos: {'ENABLED' if SAVE_COMPARISON else 'DISABLED'}")
     print("\n" + "="*50)
     
     # Process video(s)
@@ -541,17 +540,17 @@ if __name__ == "__main__":
         save_comparison=SAVE_COMPARISON
     )
     
-    print(f"\n🎯 === BATCH PROCESSING COMPLETE ===")
-    print(f"✅ Successfully processed: {len(processed_videos)} videos")
+    print(f"=== BATCH PROCESSING COMPLETE ===")
+    print(f"Successfully processed: {len(processed_videos)} videos")
     
     for original_path, output_path in processed_videos:
         video_name = os.path.basename(original_path)
         print(f"   📹 {video_name} → {os.path.basename(output_path)}")
     
-    print(f"📁 All results saved in: {OUTPUT_FOLDER}")
+    print(f"All results saved in: {OUTPUT_FOLDER}")
     
     # Tips for users
-    print(f"\n💡 === TIPS ===")
-    print(f"🔧 Set USE_PREPROCESSING=False untuk speed maksimal")
-    print(f"📊 Set SAVE_COMPARISON=True untuk lihat before/after")
-    print(f"🎬 Video hasil sudah include bounding box + color detection")
+    print(f"=== TIPS ===")
+    print(f"Set USE_PREPROCESSING=False untuk speed maksimal")
+    print(f"Set SAVE_COMPARISON=True untuk lihat before/after")
+    print(f"Video hasil sudah include bounding box + color detection")
